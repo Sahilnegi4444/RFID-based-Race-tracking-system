@@ -161,7 +161,7 @@ export default function Dashboard() {
             <thead>
               <tr style={{ background: 'var(--army-green-pale)', borderBottom: '2px solid var(--khaki-border)' }}>
                 <th className="px-6 py-3 text-xs font-bold uppercase tracking-widest" style={{ color: 'var(--army-green-dark)' }}>RFID Tag</th>
-                <th className="px-6 py-3 text-xs font-bold uppercase tracking-widest" style={{ color: 'var(--army-green-dark)' }}>Runner Name</th>
+                <th className="px-6 py-3 text-xs font-bold uppercase tracking-widest" style={{ color: 'var(--army-green-dark)' }}>Army Number</th>
                 <th className="px-6 py-3 text-xs font-bold uppercase tracking-widest" style={{ color: 'var(--army-green-dark)' }}>Status</th>
                 {cpLabels.map(col => (
                   <th key={col} className="px-6 py-3 text-xs font-bold uppercase tracking-widest" style={{ color: 'var(--army-green-dark)' }}>
@@ -184,8 +184,8 @@ export default function Dashboard() {
                   <td className="px-6 py-4 font-mono text-xs font-semibold" style={{ color: 'var(--army-green)' }}>
                     {runner.rfid}
                   </td>
-                  <td className="px-6 py-4 font-semibold text-sm" style={{ color: 'var(--text-primary)' }}>
-                    {runner.name}
+                  <td className="px-6 py-4 font-mono font-bold text-sm tracking-wider" style={{ color: 'var(--text-primary)' }}>
+                    {runner.armyNumber}
                   </td>
                   <td className="px-6 py-4">
                     <StatusBadge status={runner.status} />

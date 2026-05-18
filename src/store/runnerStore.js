@@ -10,20 +10,20 @@ const useRunnerStore = create((set, get) => ({
     set((state) => {
       const updatedRunners = state.runners.map(runner => {
         if (runner.status === 'Finished') return runner;
-        
-        // Randomly update timestamps to simulate live progress
+
+        // Randomly update timestamps to simulate live RFID reads
         if (Math.random() > 0.8) {
           const now = new Date().toLocaleTimeString('en-US', { hour12: false });
           let newTimestamps = { ...runner.timestamps };
-          
-          if (!newTimestamps.start) newTimestamps.start = now;
-          else if (!newTimestamps.mid1) newTimestamps.mid1 = now;
-          else if (!newTimestamps.mid2) newTimestamps.mid2 = now;
+
+          if (!newTimestamps.start)        newTimestamps.start  = now;
+          else if (!newTimestamps.mid1)    newTimestamps.mid1   = now;
+          else if (!newTimestamps.mid2)    newTimestamps.mid2   = now;
           else if (!newTimestamps.finish) {
             newTimestamps.finish = now;
-            runner.status = 'Finished';
+            return { ...runner, status: 'Finished', timestamps: newTimestamps };
           }
-          
+
           return { ...runner, timestamps: newTimestamps };
         }
         return runner;

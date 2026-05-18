@@ -28,10 +28,10 @@ export default function UploadTags() {
         const mapped = data
           .filter(row => row.length >= 2)
           .map(row => ({
-            rfid: row[0].trim(),
-            name: row[1].trim(),
-            status: 'Running',
-            timestamps: { start: null, mid1: null, mid2: null, finish: null },
+            rfid:        row[0].trim(),
+            armyNumber:  row[1].trim(),
+            status:      'Running',
+            timestamps:  { start: null, mid1: null, mid2: null, finish: null },
           }));
         setParsedData(mapped);
       },
@@ -198,7 +198,7 @@ export default function UploadTags() {
                           <tr style={{ borderBottom: '1px solid var(--khaki-border)' }}>
                             <th className="px-4 py-2.5 text-xs font-bold uppercase" style={{ color: 'var(--text-muted)' }}>#</th>
                             <th className="px-4 py-2.5 text-xs font-bold uppercase" style={{ color: 'var(--text-muted)' }}>RFID Tag</th>
-                            <th className="px-4 py-2.5 text-xs font-bold uppercase" style={{ color: 'var(--text-muted)' }}>Runner Name</th>
+                            <th className="px-4 py-2.5 text-xs font-bold uppercase" style={{ color: 'var(--text-muted)' }}>Army Number</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -209,7 +209,7 @@ export default function UploadTags() {
                             >
                               <td className="px-4 py-2.5 text-xs" style={{ color: 'var(--text-muted)' }}>{i + 1}</td>
                               <td className="px-4 py-2.5 font-mono text-xs font-semibold" style={{ color: 'var(--army-green)' }}>{row.rfid}</td>
-                              <td className="px-4 py-2.5 text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{row.name}</td>
+                              <td className="px-4 py-2.5 font-mono font-bold text-sm tracking-wider" style={{ color: 'var(--text-primary)' }}>{row.armyNumber}</td>
                             </tr>
                           ))}
                         </tbody>
@@ -237,9 +237,9 @@ export default function UploadTags() {
         style={{ background: 'var(--gold-pale)', border: '1px solid var(--gold-muted)', color: 'var(--text-secondary)' }}
       >
         <p className="font-semibold mb-1" style={{ color: 'var(--gold)' }}>📋 CSV Format Guide</p>
-        <p>Each row should contain exactly two columns: <span className="font-mono font-semibold">RFID_TAG, Runner Name</span></p>
+        <p>Each row should contain exactly two columns: <span className="font-mono font-semibold">RFID_TAG, Army Number</span></p>
         <p className="mt-1 font-mono text-xs" style={{ color: 'var(--text-muted)' }}>
-          Example: TAG-1007, Havildar Ramesh Singh
+          Example: TAG-1007, 14682571K
         </p>
       </div>
 

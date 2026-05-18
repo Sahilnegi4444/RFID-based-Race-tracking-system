@@ -1,15 +1,22 @@
 import { Link } from 'react-router-dom';
+import { Shield } from 'lucide-react';
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900">
+    <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--khaki)' }}>
       <div className="text-center">
-        <h1 className="text-9xl font-bold text-slate-200 dark:text-slate-800">404</h1>
-        <h2 className="text-2xl font-semibold text-slate-800 dark:text-slate-200 mt-4">Page Not Found</h2>
-        <p className="text-slate-600 dark:text-slate-400 mt-2 mb-6">The page you are looking for doesn't exist or has been moved.</p>
-        <Link 
-          to="/" 
-          className="bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+        <p className="text-8xl font-extrabold mb-4" style={{ color: 'var(--army-green-muted)' }}>404</p>
+        <Shield size={40} className="mx-auto mb-3" style={{ color: 'var(--army-green)' }} />
+        <h2 className="text-2xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>Page Not Found</h2>
+        <p className="text-sm mb-6" style={{ color: 'var(--text-muted)' }}>
+          The page you are looking for doesn't exist or has been moved.
+        </p>
+        <Link
+          to="/"
+          className="inline-block px-6 py-3 rounded-xl font-bold text-sm text-white transition-all"
+          style={{ background: 'var(--army-green)' }}
+          onMouseEnter={e => { e.currentTarget.style.background = 'var(--army-green-dark)'; }}
+          onMouseLeave={e => { e.currentTarget.style.background = 'var(--army-green)'; }}
         >
           Back to Dashboard
         </Link>

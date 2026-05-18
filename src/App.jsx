@@ -1,7 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { useEffect } from 'react';
 import useAuthStore from './store/authStore';
-import useSettingsStore from './store/settingsStore';
 import DashboardLayout from './layouts/DashboardLayout';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
@@ -16,16 +14,6 @@ const ProtectedRoute = ({ children }) => {
 };
 
 function App() {
-  const theme = useSettingsStore(state => state.theme);
-
-  useEffect(() => {
-    if (theme === 'dark') {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  }, [theme]);
-
   return (
     <Router>
       <Routes>

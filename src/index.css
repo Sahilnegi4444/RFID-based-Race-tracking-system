@@ -1,74 +1,77 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 @import "tailwindcss";
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Indian Army Light Theme */
+    --army-green: #4a5c2b;
+    --army-green-dark: #3a4a1e;
+    --army-green-light: #6b7c45;
+    --army-green-pale: #eef2e6;
+    --army-green-muted: #c8d4aa;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
- 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
- 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
- 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
- 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
- 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
- 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --gold: #8b6914;
+    --gold-light: #b8940a;
+    --gold-pale: #fdf3d7;
+    --gold-muted: #e8d08a;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
- 
-    --radius: 0.5rem;
-  }
- 
-  .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
- 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
- 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
- 
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
- 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
- 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
- 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
- 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
- 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+    --khaki: #f5f0e8;
+    --khaki-dark: #ede7d9;
+    --khaki-border: #d6cdb8;
+    --khaki-border-dark: #c4b99e;
+
+    --text-primary: #1e2213;
+    --text-secondary: #4a4e37;
+    --text-muted: #7a7d63;
+
+    --surface: #ffffff;
+    --surface-raised: #fafaf7;
+    --surface-sunken: #f5f0e8;
+
+    --danger: #c0392b;
+    --danger-pale: #fdecea;
+    --success: #2e6b3e;
+    --success-pale: #e6f4eb;
+    --warning: #9c6a00;
+    --warning-pale: #fff8e6;
   }
 }
- 
+
 @layer base {
   * {
-    @apply border-[hsl(var(--border))];
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
   }
+
+  html {
+    font-family: 'Inter', system-ui, sans-serif;
+    scroll-behavior: smooth;
+  }
+
   body {
-    @apply bg-[hsl(var(--background))] text-[hsl(var(--foreground))];
+    background-color: var(--khaki);
+    color: var(--text-primary);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--khaki-dark);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--army-green-muted);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--army-green);
 }

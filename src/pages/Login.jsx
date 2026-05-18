@@ -1,106 +1,197 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Activity, Lock, User } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Radio, Lock, User, Shield } from 'lucide-react';
 import useAuthStore from '../store/authStore';
 
 export default function Login() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const login = useAuthStore(state => state.login);
   const navigate = useNavigate();
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
-    
+    setLoading(true);
+    await new Promise(r => setTimeout(r, 500)); // simulate latency
     if (login(username, password)) {
       navigate('/dashboard');
     } else {
-      setError('Invalid username or password. Use admin/admin.');
+      setError('Invalid credentials. Use admin / admin.');
+      setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative overflow-hidden">
-      {/* Background decorations */}
-      <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0 pointer-events-none">
-        <div className="absolute -top-[10%] -right-[10%] w-[40%] h-[40%] rounded-full bg-blue-400/20 dark:bg-blue-600/10 blur-[120px]" />
-        <div className="absolute -bottom-[10%] -left-[10%] w-[40%] h-[40%] rounded-full bg-indigo-400/20 dark:bg-indigo-600/10 blur-[120px]" />
+    <div
+      className="min-h-screen flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden"
+      style={{ background: 'var(--khaki)' }}
+    >
+      {/* Decorative background blobs */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <div
+          className="absolute -top-32 -right-32 w-96 h-96 rounded-full blur-3xl opacity-40"
+          style={{ background: 'var(--army-green-muted)' }}
+        />
+        <div
+          className="absolute -bottom-32 -left-32 w-96 h-96 rounded-full blur-3xl opacity-30"
+          style={{ background: 'var(--gold-muted)' }}
+        />
+        {/* Subtle diagonal stripes pattern */}
+        <div
+          className="absolute inset-0 opacity-5"
+          style={{
+            backgroundImage: 'repeating-linear-gradient(45deg, #4a5c2b 0, #4a5c2b 1px, transparent 0, transparent 50%)',
+            backgroundSize: '24px 24px',
+          }}
+        />
       </div>
 
-      <div className="sm:mx-auto sm:w-full sm:max-w-md relative z-10">
-        <div className="flex justify-center">
-          <div className="bg-blue-600 p-3 rounded-2xl shadow-lg shadow-blue-500/30">
-            <Activity className="w-10 h-10 text-white" />
+      {/* Card */}
+      <motion.div
+        initial={{ opacity: 0, y: 24 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.45, ease: 'easeOut' }}
+        className="relative z-10 sm:mx-auto sm:w-full sm:max-w-md"
+      >
+        {/* Header */}
+        <div className="text-center mb-8">
+          <div className="flex justify-center mb-4">
+            <div
+              className="p-4 rounded-2xl shadow-lg"
+              style={{ background: 'var(--army-green)', color: '#fff' }}
+            >
+              <Radio size={36} />
+            </div>
           </div>
+          <h1 className="text-3xl font-extrabold tracking-tight" style={{ color: 'var(--text-primary)' }}>
+            RFID Race Tracking
+          </h1>
+          <p className="mt-1 text-sm font-medium" style={{ color: 'var(--text-muted)' }}>
+            🏅 Indian Army — Admin Control Center
+          </p>
         </div>
-        <h2 className="mt-6 text-center text-3xl font-extrabold text-slate-900 dark:text-white">
-          RFID Race Tracking
-        </h2>
-        <p className="mt-2 text-center text-sm text-slate-600 dark:text-slate-400">
-          Admin Control Center
-        </p>
-      </div>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md relative z-10">
-        <div className="bg-white dark:bg-slate-900 py-8 px-4 shadow-xl shadow-slate-200/50 dark:shadow-none sm:rounded-2xl sm:px-10 border border-slate-100 dark:border-slate-800 backdrop-blur-xl">
-          <form className="space-y-6" onSubmit={handleLogin}>
+        {/* Form card */}
+        <div
+          className="rounded-2xl p-8 shadow-xl"
+          style={{
+            background: 'var(--surface)',
+            border: '1px solid var(--khaki-border)',
+            boxShadow: '0 4px 32px rgba(74,92,43,0.10)',
+          }}
+        >
+          {/* Gold accent bar */}
+          <div
+            className="h-1 rounded-full mb-8 -mt-2 mx-auto w-16"
+            style={{ background: 'var(--gold)' }}
+          />
+
+          <form className="space-y-5" onSubmit={handleLogin}>
             {error && (
-              <div className="bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 p-3 rounded-lg text-sm text-center border border-red-100 dark:border-red-800">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="p-3 rounded-xl text-sm text-center font-medium"
+                style={{
+                  background: 'var(--danger-pale)',
+                  color: 'var(--danger)',
+                  border: '1px solid #f5c6c2',
+                }}
+              >
                 {error}
-              </div>
+              </motion.div>
             )}
-            
+
+            {/* Username */}
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
+              <label
+                className="block text-sm font-semibold mb-1.5"
+                style={{ color: 'var(--text-secondary)' }}
+              >
                 Username
               </label>
-              <div className="mt-1 relative rounded-md shadow-sm">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <User className="h-5 w-5 text-slate-400" />
-                </div>
+              <div className="relative">
+                <User
+                  size={16}
+                  className="absolute left-3 top-1/2 -translate-y-1/2"
+                  style={{ color: 'var(--text-muted)' }}
+                />
                 <input
                   type="text"
                   value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  className="block w-full pl-10 sm:text-sm border-slate-300 dark:border-slate-700 rounded-xl focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-slate-950 text-slate-900 dark:text-white py-3 px-4 border"
+                  onChange={e => setUsername(e.target.value)}
                   placeholder="admin"
                   required
+                  className="w-full pl-9 pr-4 py-2.5 rounded-xl text-sm font-medium outline-none transition-all"
+                  style={{
+                    background: 'var(--khaki)',
+                    border: '1.5px solid var(--khaki-border)',
+                    color: 'var(--text-primary)',
+                  }}
+                  onFocus={e => { e.target.style.borderColor = 'var(--army-green)'; e.target.style.boxShadow = '0 0 0 3px rgba(74,92,43,0.12)'; }}
+                  onBlur={e => { e.target.style.borderColor = 'var(--khaki-border)'; e.target.style.boxShadow = 'none'; }}
                 />
               </div>
             </div>
 
+            {/* Password */}
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
+              <label
+                className="block text-sm font-semibold mb-1.5"
+                style={{ color: 'var(--text-secondary)' }}
+              >
                 Password
               </label>
-              <div className="mt-1 relative rounded-md shadow-sm">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Lock className="h-5 w-5 text-slate-400" />
-                </div>
+              <div className="relative">
+                <Lock
+                  size={16}
+                  className="absolute left-3 top-1/2 -translate-y-1/2"
+                  style={{ color: 'var(--text-muted)' }}
+                />
                 <input
                   type="password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="block w-full pl-10 sm:text-sm border-slate-300 dark:border-slate-700 rounded-xl focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-slate-950 text-slate-900 dark:text-white py-3 px-4 border"
+                  onChange={e => setPassword(e.target.value)}
                   placeholder="••••••••"
                   required
+                  className="w-full pl-9 pr-4 py-2.5 rounded-xl text-sm font-medium outline-none transition-all"
+                  style={{
+                    background: 'var(--khaki)',
+                    border: '1.5px solid var(--khaki-border)',
+                    color: 'var(--text-primary)',
+                  }}
+                  onFocus={e => { e.target.style.borderColor = 'var(--army-green)'; e.target.style.boxShadow = '0 0 0 3px rgba(74,92,43,0.12)'; }}
+                  onBlur={e => { e.target.style.borderColor = 'var(--khaki-border)'; e.target.style.boxShadow = 'none'; }}
                 />
               </div>
             </div>
 
-            <div>
-              <button
-                type="submit"
-                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
-              >
-                Sign in to Dashboard
-              </button>
-            </div>
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-3 rounded-xl font-bold text-sm text-white transition-all mt-2"
+              style={{ background: loading ? 'var(--army-green-light)' : 'var(--army-green)' }}
+              onMouseEnter={e => { if (!loading) e.currentTarget.style.background = 'var(--army-green-dark)'; }}
+              onMouseLeave={e => { if (!loading) e.currentTarget.style.background = 'var(--army-green)'; }}
+            >
+              {loading ? 'Authenticating…' : 'Sign In to Dashboard'}
+            </button>
           </form>
+
+          <p className="mt-6 text-center text-xs" style={{ color: 'var(--text-muted)' }}>
+            Demo credentials: <span className="font-mono font-semibold" style={{ color: 'var(--army-green)' }}>admin / admin</span>
+          </p>
         </div>
-      </div>
+
+        <p className="mt-6 text-center text-xs" style={{ color: 'var(--text-muted)' }}>
+          <Shield size={12} className="inline mr-1" />
+          Secured — Internal Network Only
+        </p>
+      </motion.div>
     </div>
   );
 }

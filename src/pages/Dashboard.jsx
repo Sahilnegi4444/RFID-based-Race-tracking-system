@@ -1,126 +1,215 @@
 import { useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Users, Timer, Trophy, Activity } from 'lucide-react';
+import { Users, Timer, Trophy, Activity, MapPin, Clock } from 'lucide-react';
 import useRunnerStore from '../store/runnerStore';
 import useSettingsStore from '../store/settingsStore';
 
+// ── Stat Card ──────────────────────────────────────────────────────────────
+function StatCard({ title, value, icon: Icon, accentColor, accentPale, pulse, subtitle }) {
+  return (
+    <motion.div
+      whileHover={{ y: -3, boxShadow: '0 8px 24px rgba(74,92,43,0.12)' }}
+      transition={{ duration: 0.2 }}
+      className="rounded-2xl p-5 flex items-center gap-4"
+      style={{
+        background: 'var(--surface)',
+        border: '1px solid var(--khaki-border)',
+        boxShadow: '0 2px 8px rgba(74,92,43,0.06)',
+      }}
+    >
+      <div
+        className="p-3 rounded-xl relative shrink-0"
+        style={{ background: accentPale, color: accentColor }}
+      >
+        <Icon size={22} />
+        {pulse && (
+          <span className="absolute -top-1 -right-1 flex h-3 w-3">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style={{ background: accentColor }} />
+            <span className="relative inline-flex rounded-full h-3 w-3" style={{ background: accentColor }} />
+          </span>
+        )}
+      </div>
+      <div>
+        <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>{title}</p>
+        <p className="text-2xl font-extrabold mt-0.5" style={{ color: 'var(--text-primary)' }}>{value}</p>
+        {subtitle && <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>{subtitle}</p>}
+      </div>
+    </motion.div>
+  );
+}
+
+// ── Status badge ───────────────────────────────────────────────────────────
+function StatusBadge({ status }) {
+  const isRunning = status === 'Running';
+  return (
+    <span
+      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold"
+      style={{
+        background: isRunning ? 'var(--army-green-pale)' : 'var(--gold-pale)',
+        color: isRunning ? 'var(--army-green)' : 'var(--gold)',
+        border: `1px solid ${isRunning ? 'var(--army-green-muted)' : 'var(--gold-muted)'}`,
+      }}
+    >
+      {isRunning && (
+        <span
+          className="w-1.5 h-1.5 rounded-full animate-pulse"
+          style={{ background: 'var(--army-green)' }}
+        />
+      )}
+      {status}
+    </span>
+  );
+}
+
+// ── Timestamp cell ─────────────────────────────────────────────────────────
+function TsCell({ value }) {
+  if (!value) return (
+    <span className="font-mono text-xs" style={{ color: 'var(--khaki-border-dark)' }}>—</span>
+  );
+  return (
+    <span className="font-mono text-xs font-medium" style={{ color: 'var(--army-green-dark)' }}>{value}</span>
+  );
+}
+
+// ── Main component ─────────────────────────────────────────────────────────
 export default function Dashboard() {
   const { runners, simulateLiveUpdates } = useRunnerStore();
   const checkpoints = useSettingsStore(state => state.checkpoints);
 
   useEffect(() => {
-    // Simulate real-time updates
-    const interval = setInterval(() => {
-      simulateLiveUpdates();
-    }, 2000);
+    const interval = setInterval(simulateLiveUpdates, 2000);
     return () => clearInterval(interval);
   }, [simulateLiveUpdates]);
 
-  const activeRunners = runners.filter(r => r.status === 'Running').length;
-  const finishedRunners = runners.filter(r => r.status === 'Finished').length;
+  const active   = runners.filter(r => r.status === 'Running').length;
+  const finished = runners.filter(r => r.status === 'Finished').length;
 
-  const getColumns = () => {
-    let cols = ['Start', 'Mid1'];
-    if (checkpoints >= 3) cols.push('Mid2');
-    if (checkpoints === 4) cols.push('Finish');
-    return cols;
-  };
-
-  const columns = getColumns();
+  const cpLabels = ['Start', 'Mid1', 'Mid2', 'Finish'].slice(0, checkpoints);
+  const cpKeys   = ['start', 'mid1', 'mid2', 'finish'].slice(0, checkpoints);
 
   return (
     <div className="space-y-6">
-      {/* Stats row */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <StatCard title="Total Runners" value={runners.length} icon={Users} color="bg-blue-500" />
-        <StatCard title="Active Now" value={activeRunners} icon={Activity} color="bg-green-500" pulse />
-        <StatCard title="Finished" value={finishedRunners} icon={Trophy} color="bg-indigo-500" />
-        <StatCard title="Checkpoints" value={checkpoints} icon={Timer} color="bg-orange-500" />
+
+      {/* ── Stats ── */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
+        <StatCard
+          title="Total Runners"
+          value={runners.length}
+          icon={Users}
+          accentColor="var(--army-green)"
+          accentPale="var(--army-green-pale)"
+        />
+        <StatCard
+          title="Active Now"
+          value={active}
+          icon={Activity}
+          accentColor="var(--success)"
+          accentPale="var(--success-pale)"
+          pulse
+          subtitle="Running on course"
+        />
+        <StatCard
+          title="Finished"
+          value={finished}
+          icon={Trophy}
+          accentColor="var(--gold)"
+          accentPale="var(--gold-pale)"
+        />
+        <StatCard
+          title="Checkpoints"
+          value={checkpoints}
+          icon={MapPin}
+          accentColor="var(--warning)"
+          accentPale="var(--warning-pale)"
+          subtitle="Active gates"
+        />
       </div>
 
-      {/* Main Table */}
-      <div className="bg-white dark:bg-slate-950 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
-        <div className="p-6 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-900/50">
-          <h2 className="text-lg font-semibold text-slate-800 dark:text-white flex items-center gap-2">
-            <span className="relative flex h-3 w-3 mr-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+      {/* ── Live Table ── */}
+      <div
+        className="rounded-2xl overflow-hidden"
+        style={{
+          background: 'var(--surface)',
+          border: '1px solid var(--khaki-border)',
+          boxShadow: '0 2px 12px rgba(74,92,43,0.07)',
+        }}
+      >
+        {/* Table header bar */}
+        <div
+          className="px-6 py-4 flex items-center justify-between"
+          style={{
+            background: 'var(--army-green)',
+            borderBottom: '2px solid var(--gold)',
+          }}
+        >
+          <div className="flex items-center gap-3">
+            <span className="relative flex h-3 w-3">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-300 opacity-75" />
+              <span className="relative inline-flex rounded-full h-3 w-3 bg-red-400" />
             </span>
-            Live Race Status
-          </h2>
-          <div className="px-3 py-1 bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 rounded-full text-xs font-medium">
-            System Online
+            <h2 className="text-base font-bold text-white tracking-wide">Live Race Status</h2>
+          </div>
+          <div className="flex items-center gap-2 text-xs font-medium" style={{ color: 'var(--gold-muted)' }}>
+            <Clock size={13} />
+            Updates every 2s
           </div>
         </div>
 
+        {/* Table */}
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-left">
-            <thead className="text-xs text-slate-500 uppercase bg-slate-50 dark:bg-slate-900/50 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
-              <tr>
-                <th className="px-6 py-4 font-semibold">RFID Tag</th>
-                <th className="px-6 py-4 font-semibold">Runner Name</th>
-                <th className="px-6 py-4 font-semibold">Status</th>
-                {columns.map(col => (
-                  <th key={col} className="px-6 py-4 font-semibold">{col}</th>
+            <thead>
+              <tr style={{ background: 'var(--army-green-pale)', borderBottom: '2px solid var(--khaki-border)' }}>
+                <th className="px-6 py-3 text-xs font-bold uppercase tracking-widest" style={{ color: 'var(--army-green-dark)' }}>RFID Tag</th>
+                <th className="px-6 py-3 text-xs font-bold uppercase tracking-widest" style={{ color: 'var(--army-green-dark)' }}>Runner Name</th>
+                <th className="px-6 py-3 text-xs font-bold uppercase tracking-widest" style={{ color: 'var(--army-green-dark)' }}>Status</th>
+                {cpLabels.map(col => (
+                  <th key={col} className="px-6 py-3 text-xs font-bold uppercase tracking-widest" style={{ color: 'var(--army-green-dark)' }}>
+                    {col}
+                  </th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {runners.map((runner, index) => (
                 <motion.tr
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.05 }}
                   key={runner.rfid}
-                  className="border-b border-slate-100 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                  initial={{ opacity: 0, x: -8 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.05, duration: 0.25 }}
+                  style={{ borderBottom: '1px solid var(--khaki-dark)' }}
+                  onMouseEnter={e => { e.currentTarget.style.background = 'var(--army-green-pale)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
                 >
-                  <td className="px-6 py-4 font-mono font-medium text-slate-700 dark:text-slate-300">{runner.rfid}</td>
-                  <td className="px-6 py-4 font-medium text-slate-900 dark:text-white">{runner.name}</td>
-                  <td className="px-6 py-4">
-                    <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${runner.status === 'Running'
-                        ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
-                        : 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400'
-                      }`}>
-                      {runner.status}
-                    </span>
+                  <td className="px-6 py-4 font-mono text-xs font-semibold" style={{ color: 'var(--army-green)' }}>
+                    {runner.rfid}
                   </td>
-                  <td className="px-6 py-4 text-slate-600 dark:text-slate-400 font-mono text-xs">{runner.timestamps.start || '--:--:--'}</td>
-                  <td className="px-6 py-4 text-slate-600 dark:text-slate-400 font-mono text-xs">{runner.timestamps.mid1 || '--:--:--'}</td>
-                  {checkpoints >= 3 && (
-                    <td className="px-6 py-4 text-slate-600 dark:text-slate-400 font-mono text-xs">{runner.timestamps.mid2 || '--:--:--'}</td>
-                  )}
-                  {checkpoints === 4 && (
-                    <td className="px-6 py-4 text-slate-600 dark:text-slate-400 font-mono text-xs">{runner.timestamps.finish || '--:--:--'}</td>
-                  )}
+                  <td className="px-6 py-4 font-semibold text-sm" style={{ color: 'var(--text-primary)' }}>
+                    {runner.name}
+                  </td>
+                  <td className="px-6 py-4">
+                    <StatusBadge status={runner.status} />
+                  </td>
+                  {cpKeys.map(key => (
+                    <td key={key} className="px-6 py-4">
+                      <TsCell value={runner.timestamps[key]} />
+                    </td>
+                  ))}
                 </motion.tr>
               ))}
             </tbody>
           </table>
         </div>
+
+        {/* Footer */}
+        <div
+          className="px-6 py-3 text-xs font-medium flex items-center justify-between"
+          style={{ background: 'var(--surface-raised)', color: 'var(--text-muted)', borderTop: '1px solid var(--khaki-border)' }}
+        >
+          <span>{runners.length} total participants</span>
+          <span>{finished} completed · {active} on course</span>
+        </div>
       </div>
     </div>
-  );
-}
-
-function StatCard({ title, value, icon: Icon, color, pulse }) {
-  return (
-    <motion.div
-      whileHover={{ y: -4 }}
-      className="bg-white dark:bg-slate-950 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 flex items-center gap-4"
-    >
-      <div className={`p-4 rounded-xl text-white ${color} relative`}>
-        <Icon size={24} />
-        {pulse && (
-          <span className="absolute top-0 right-0 -mt-1 -mr-1 flex h-3 w-3">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-3 w-3 bg-white"></span>
-          </span>
-        )}
-      </div>
-      <div>
-        <p className="text-sm font-medium text-slate-500 dark:text-slate-400">{title}</p>
-        <p className="text-2xl font-bold text-slate-900 dark:text-white">{value}</p>
-      </div>
-    </motion.div>
   );
 }

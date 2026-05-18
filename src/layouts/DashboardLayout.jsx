@@ -1,11 +1,12 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Users, Upload, Settings as SettingsIcon, LogOut, Radio } from 'lucide-react';
+import { LayoutDashboard, Upload, Settings as SettingsIcon, LogOut, Radio, Shield } from 'lucide-react';
 import useAuthStore from '../store/authStore';
 import useSettingsStore from '../store/settingsStore';
 import { cn } from '../utils/utils';
 
 export default function DashboardLayout() {
   const logout = useAuthStore(state => state.logout);
+  const user = useAuthStore(state => state.user);
   const raceTitle = useSettingsStore(state => state.raceTitle);
   const navigate = useNavigate();
 
@@ -21,62 +22,127 @@ export default function DashboardLayout() {
   ];
 
   return (
-    <div className="flex h-screen bg-slate-50 dark:bg-slate-900 overflow-hidden">
-      {/* Sidebar */}
-      <aside className="w-64 bg-white dark:bg-slate-950 border-r border-slate-200 dark:border-slate-800 flex flex-col">
-        <div className="p-6 flex items-center gap-3 text-slate-900 dark:text-white font-bold text-lg border-b border-slate-100 dark:border-slate-800">
-          <div className="p-2 bg-blue-600 rounded-lg text-white">
+    <div className="flex h-screen overflow-hidden" style={{ background: 'var(--khaki)' }}>
+
+      {/* ── Sidebar ── */}
+      <aside
+        className="w-64 flex flex-col shrink-0 shadow-lg"
+        style={{
+          background: 'var(--army-green-dark)',
+          borderRight: '3px solid var(--gold)',
+        }}
+      >
+        {/* Logo / Brand */}
+        <div
+          className="p-5 flex items-center gap-3 shrink-0"
+          style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}
+        >
+          <div
+            className="p-2 rounded-lg shrink-0"
+            style={{ background: 'var(--gold)', color: '#fff' }}
+          >
             <Radio size={20} />
           </div>
-          <span>RFID System</span>
+          <div>
+            <p className="font-bold text-white text-sm leading-tight">RFID Tracker</p>
+            <p className="text-xs" style={{ color: 'var(--gold-muted)' }}>Race Control</p>
+          </div>
         </div>
-        
-        <nav className="flex-1 p-4 space-y-1">
+
+        {/* Navigation */}
+        <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
           {navItems.map((item) => (
             <NavLink
               key={item.path}
               to={item.path}
               className={({ isActive }) => cn(
-                "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 font-medium",
-                isActive 
-                  ? "bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400" 
-                  : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+                'flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 font-medium text-sm',
+                isActive
+                  ? 'text-white'
+                  : 'text-white/60 hover:text-white hover:bg-white/10'
               )}
+              style={({ isActive }) => isActive ? {
+                background: 'var(--army-green)',
+                borderLeft: '3px solid var(--gold)',
+                paddingLeft: '13px',
+              } : {}}
             >
-              <item.icon size={20} />
+              <item.icon size={18} />
               {item.name}
             </NavLink>
           ))}
         </nav>
 
-        <div className="p-4 border-t border-slate-200 dark:border-slate-800">
-          <button 
+        {/* User & Logout */}
+        <div
+          className="p-4 shrink-0"
+          style={{ borderTop: '1px solid rgba(255,255,255,0.1)' }}
+        >
+          <div className="flex items-center gap-3 px-3 py-2 mb-2 rounded-xl" style={{ background: 'rgba(255,255,255,0.06)' }}>
+            <div
+              className="h-8 w-8 rounded-full flex items-center justify-center font-bold text-sm shrink-0"
+              style={{ background: 'var(--gold)', color: '#fff' }}
+            >
+              {user?.username?.[0]?.toUpperCase() ?? 'A'}
+            </div>
+            <div className="overflow-hidden">
+              <p className="text-white text-sm font-medium truncate">{user?.username ?? 'Admin'}</p>
+              <p className="text-xs" style={{ color: 'var(--gold-muted)' }}>Administrator</p>
+            </div>
+          </div>
+
+          <button
             onClick={handleLogout}
-            className="flex items-center gap-3 px-4 py-3 w-full rounded-xl text-slate-600 dark:text-slate-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20 dark:hover:text-red-400 transition-colors font-medium"
+            className="flex items-center gap-3 px-4 py-2.5 w-full rounded-xl text-sm font-medium transition-colors"
+            style={{ color: 'rgba(255,255,255,0.6)' }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(192,57,43,0.25)'; e.currentTarget.style.color = '#ff8a8a'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'rgba(255,255,255,0.6)'; }}
           >
-            <LogOut size={20} />
-            Logout
+            <LogOut size={17} />
+            Sign Out
           </button>
         </div>
       </aside>
 
-      {/* Main Content */}
+      {/* ── Main ── */}
       <main className="flex-1 flex flex-col h-screen overflow-hidden">
+
         {/* Top Navbar */}
-        <header className="h-16 bg-white dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-8 shrink-0">
-          <h1 className="text-xl font-semibold text-slate-800 dark:text-white">
-            {raceTitle}
-          </h1>
-          <div className="flex items-center gap-4">
-            <div className="h-8 w-8 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center text-blue-700 dark:text-blue-300 font-bold">
-              A
+        <header
+          className="h-16 flex items-center justify-between px-8 shrink-0 shadow-sm"
+          style={{
+            background: 'var(--surface)',
+            borderBottom: '2px solid var(--khaki-border)',
+          }}
+        >
+          {/* Title area */}
+          <div className="flex items-center gap-3">
+            <Shield size={20} style={{ color: 'var(--army-green)' }} />
+            <div>
+              <h1 className="text-base font-bold leading-tight" style={{ color: 'var(--text-primary)' }}>
+                {raceTitle}
+              </h1>
+              <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Admin Control Center</p>
             </div>
-            <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Admin User</span>
+          </div>
+
+          {/* Status badge */}
+          <div className="flex items-center gap-3">
+            <span
+              className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold"
+              style={{ background: 'var(--success-pale)', color: 'var(--success)' }}
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-green-600 inline-block animate-pulse" />
+              System Online
+            </span>
           </div>
         </header>
 
         {/* Page Content */}
-        <div className="flex-1 overflow-auto p-8 bg-slate-50 dark:bg-slate-900">
+        <div
+          className="flex-1 overflow-auto p-8"
+          style={{ background: 'var(--khaki)' }}
+        >
           <Outlet />
         </div>
       </main>

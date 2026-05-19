@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { initialRunners } from '../mock/mockData';
 import { api } from '../services/api';
+import useRaceStore from './raceStore';
 
 // ── Leaderboard sort ───────────────────────────────────────────────────────
 // Primary:   most checkpoints crossed (desc)
@@ -75,8 +76,9 @@ const useRunnerStore = create((set, get) => ({
           }
 
           if (recordedKey) {
-            // Push to backend database silently
-            api.recordCheckpoint(runner.rfid, recordedKey, now.toISOString());
+            // Push to backend — include raceSessionId so the record links to the active race
+            const raceSessionId = useRaceStore.getState().raceSessionId;
+            api.recordCheckpoint(runner.rfid, recordedKey, now.toISOString(), raceSessionId);
 
             // Check if this was the last configured gate
             const isFinished = recordedKey === activeKeys[activeKeys.length - 1];

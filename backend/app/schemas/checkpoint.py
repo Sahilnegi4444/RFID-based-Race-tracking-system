@@ -1,3 +1,4 @@
+import uuid
 from datetime import datetime
 from typing import Optional
 
@@ -9,16 +10,16 @@ class CheckpointRecordCreate(BaseModel):
     checkpoint: str       # "start" | "checkpoint1" | "checkpoint2" | "finish"
     recorded_at: datetime
     reader_id: Optional[str] = None
-    race_session_id: Optional[str] = None
+    race_session_id: Optional[uuid.UUID] = None  # must be UUID, not str
 
 
 class CheckpointRecordRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
-    id: str
+    id: uuid.UUID             # UUID object, serialized as string by Pydantic
     army_number: str
     checkpoint: str
     recorded_at: datetime
     reader_id: Optional[str]
-    race_session_id: Optional[str]
+    race_session_id: Optional[uuid.UUID]
     created_at: datetime

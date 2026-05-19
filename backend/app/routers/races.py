@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.crud import race as crud
 from app.crud.runner import get_verified_runners
 from app.database import get_db
+from app.models.race_session import RaceStatus
 from app.schemas.race import RaceSessionCreate, RaceSessionRead, RaceResultRead
 
 router = APIRouter(prefix="/races", tags=["races"])
@@ -36,8 +37,8 @@ async def start_race(race_id: str, db: AsyncSession = Depends(get_db)):
     race = await crud.get_race_by_id(db, race_id)
     if not race:
         raise HTTPException(404, "Race not found.")
-    if race.status != "pending":
-        raise HTTPException(400, f"Race is already '{race.status}'. Cannot start.")
+    if race.status != RaceStatus.pending:
+        raise HTTPException(400, f"Race is already '{race.status.value}'. Cannot start.")
 
     verified = await get_verified_runners(db)
     if not verified:
@@ -52,7 +53,7 @@ async def finish_race(race_id: str, db: AsyncSession = Depends(get_db)):
     race = await crud.get_race_by_id(db, race_id)
     if not race:
         raise HTTPException(404, "Race not found.")
-    if race.status != "active":
+    if race.status != RaceStatus.active:
         raise HTTPException(400, "Race is not active.")
 
     verified = await get_verified_runners(db)

@@ -1,5 +1,6 @@
-import { Wifi, WifiOff, MapPin, Settings as SettingsIcon, Type, Signal } from 'lucide-react';
+import { Wifi, WifiOff, MapPin, Settings as SettingsIcon, Signal, Flag } from 'lucide-react';
 import useSettingsStore from '../store/settingsStore';
+import useRaceStore from '../store/raceStore';
 import { motion } from 'framer-motion';
 
 // ── Section wrapper ────────────────────────────────────────────────────────
@@ -29,12 +30,15 @@ function Section({ icon: Icon, iconColor, iconBg, title, children }) {
 
 export default function Settings() {
   const { checkpoints, setCheckpoints, raceTitle, setRaceTitle, readers } = useSettingsStore();
+  const { raceType, setRaceType, raceCustomName, setRaceCustomName } = useRaceStore();
 
   const cpOptions = [
-    { value: 2, label: '2', desc: 'Start → Mid1' },
-    { value: 3, label: '3', desc: 'Start → Mid1 → Mid2' },
-    { value: 4, label: '4', desc: 'Start → Mid1 → Mid2 → Finish' },
+    { value: 2, label: '2', desc: 'Start → Checkpoint 1' },
+    { value: 3, label: '3', desc: 'Start → Checkpoint 1 → Checkpoint 2' },
+    { value: 4, label: '4', desc: 'Start → Checkpoint 1 → Checkpoint 2 → Finish' },
   ];
+
+  const raceTypes = ['BPT', 'PPT', 'CPT', 'others'];
 
   const signalBars = (signal) => {
     const levels = { strong: 4, good: 3, fair: 2, weak: 1, none: 0 };
@@ -45,7 +49,44 @@ export default function Settings() {
   return (
     <div className="max-w-3xl mx-auto space-y-6">
 
-      {/* ── System Configuration ── */}
+      {/* ── Race Configuration ── */}
+      <Section icon={Flag} iconColor="var(--gold)" iconBg="var(--gold-pale)" title="Race Configuration">
+        <div className="space-y-5">
+          <div>
+            <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--text-secondary)' }}>Race Type</label>
+            <div className="flex flex-wrap gap-3">
+              {raceTypes.map(type => {
+                const active = raceType === type;
+                return (
+                  <button key={type} onClick={() => setRaceType(type)}
+                    className="px-5 py-2.5 rounded-xl font-semibold text-sm transition-all"
+                    style={{
+                      background: active ? 'var(--gold)' : 'var(--khaki)',
+                      color: active ? '#fff' : 'var(--text-secondary)',
+                      border: `1.5px solid ${active ? 'var(--gold)' : 'var(--khaki-border)'}`,
+                      boxShadow: active ? '0 2px 8px rgba(139,105,20,0.25)' : 'none',
+                    }}>
+                    {type === 'others' ? 'Others' : type}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+          {raceType === 'others' && (
+            <div>
+              <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--text-secondary)' }}>Custom Race Name</label>
+              <input type="text" placeholder="e.g. Annual Cross Country 2025"
+                value={raceCustomName}
+                onChange={e => setRaceCustomName(e.target.value)}
+                className="w-full sm:w-96 px-4 py-2.5 rounded-xl text-sm font-medium outline-none transition-all"
+                style={{ background: 'var(--khaki)', border: '1.5px solid var(--khaki-border)', color: 'var(--text-primary)' }}
+                onFocus={e => { e.target.style.borderColor = 'var(--gold)'; }}
+                onBlur={e => { e.target.style.borderColor = 'var(--khaki-border)'; }}
+              />
+            </div>
+          )}
+        </div>
+      </Section>
       <Section icon={SettingsIcon} iconColor="var(--army-green)" iconBg="var(--army-green-pale)" title="System Configuration">
         <div className="space-y-6">
 

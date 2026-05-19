@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
 
 from sqlalchemy import select
+from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.runner import Runner, RunnerStatus
@@ -38,14 +39,50 @@ async def create_runner(db: AsyncSession, data: RunnerCreate) -> Runner:
 
 
 async def bulk_create_runners(db: AsyncSession, runners_data: list[RunnerCreate]) -> list[Runner]:
-    runners = [
-        Runner(rfid_tag=r.rfid_tag, army_number=r.army_number) for r in runners_data
+    """
+    UPSERT runners — inserts new ones, updates existing ones on army_number conflict.
+    Uses plain dicts so asyncpg doesn't choke on ORM-mapped returning().
+    """
+    if not runners_data:
+        return []
+
+    now = datetime.now(timezone.utc)
+    values = [
+        {
+            "army_number": r.army_number,
+            "rfid_tag": r.rfid_tag,
+            "verified": r.verified,
+            "verified_at": now if r.verified else None,
+            "status": RunnerStatus.registered,   # ← lowercase, matches enum definition
+            "created_at": now,
+            "updated_at": now,
+        }
+        for r in runners_data
     ]
-    db.add_all(runners)
+
+    # Build the UPSERT — on duplicate army_number, update RFID + verification fields
+    stmt = (
+        insert(Runner)
+        .values(values)
+        .on_conflict_do_update(
+            index_elements=["army_number"],
+            set_={
+                "rfid_tag": insert(Runner).excluded.rfid_tag,
+                "verified": insert(Runner).excluded.verified,
+                "verified_at": insert(Runner).excluded.verified_at,
+                "updated_at": now,
+            },
+        )
+    )
+    await db.execute(stmt)
     await db.flush()
-    for r in runners:
-        await db.refresh(r)
-    return runners
+
+    # Re-fetch the inserted/updated rows to return full ORM objects
+    army_numbers = [r.army_number for r in runners_data]
+    result = await db.execute(
+        select(Runner).where(Runner.army_number.in_(army_numbers))
+    )
+    return result.scalars().all()
 
 
 async def mark_verified(db: AsyncSession, runner: Runner) -> Runner:

@@ -4,26 +4,19 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Upload, FileUp, CheckCircle, XCircle, AlertCircle, Table, X, Loader, ShieldCheck } from 'lucide-react';
 import useRunnerStore from '../store/runnerStore';
 
-// ── Mock verification (calls backend verify endpoint or uses local mock) ───
-async function mockVerifyArmyNumber(armyNumber) {
-  // TODO: swap with real API call when backend is connected:
-  // const res = await fetch(`http://localhost:8000/api/v1/verify/${armyNumber}`);
-  // return await res.json();
-  await new Promise(r => setTimeout(r, 150 + Math.random() * 200)); // simulate latency
-  return { army_number: armyNumber, verified: true, message: 'Authorized (mock)' };
-}
+import { api } from '../services/api';
 
 export default function UploadTags() {
-  const [file, setFile]             = useState(null);
+  const [file, setFile] = useState(null);
   const [parsedData, setParsedData] = useState([]);       // Step 1 result
   const [verifyResults, setVerifyResults] = useState({}); // { armyNumber: { verified, loading } }
-  const [verifying, setVerifying]   = useState(false);
-  const [verified, setVerified]     = useState(false);    // all done
-  const [error, setError]           = useState('');
+  const [verifying, setVerifying] = useState(false);
+  const [verified, setVerified] = useState(false);    // all done
+  const [error, setError] = useState('');
   const [isDragging, setIsDragging] = useState(false);
-  const [step, setStep]             = useState(1);        // 1=Upload 2=Verify 3=Done
-  const fileInputRef                = useRef(null);
-  const addRunners                  = useRunnerStore(state => state.addRunners);
+  const [step, setStep] = useState(1);        // 1=Upload 2=Verify 3=Done
+  const fileInputRef = useRef(null);
+  const addRunners = useRunnerStore(state => state.addRunners);
 
   const processFile = (f) => {
     setError(''); setVerifyResults({}); setVerified(false); setStep(1);
@@ -51,7 +44,7 @@ export default function UploadTags() {
       Object.fromEntries(parsedData.map(r => [r.armyNumber, { loading: true, verified: false }]))
     );
     for (const runner of parsedData) {
-      const res = await mockVerifyArmyNumber(runner.armyNumber);
+      const res = await api.verifyRunner(runner.armyNumber);
       setVerifyResults(prev => ({
         ...prev,
         [runner.armyNumber]: { loading: false, verified: res.verified, message: res.message },
@@ -62,23 +55,31 @@ export default function UploadTags() {
     setStep(3);
   };
 
-  const handleImport = () => {
+  const handleImport = async () => {
     const toImport = parsedData
       .filter(r => verifyResults[r.armyNumber]?.verified)
       .map(r => ({
         rfid: r.rfid,
+        rfid_tag: r.rfid,           // backend payload
         armyNumber: r.armyNumber,
+        army_number: r.armyNumber,  // backend payload
         status: 'Running',
         verified: true,
         timestamps: { start: null, checkpoint1: null, checkpoint2: null, finish: null },
       }));
+
+    // 1. Push to database
+    await api.bulkCreateRunners(toImport);
+
+    // 2. Add to frontend store
     addRunners(toImport);
+
     // reset
     setFile(null); setParsedData([]); setVerifyResults({}); setVerified(false); setStep(1);
   };
 
-  const verifiedCount  = Object.values(verifyResults).filter(v => v.verified).length;
-  const rejectedCount  = Object.values(verifyResults).filter(v => !v.loading && !v.verified).length;
+  const verifiedCount = Object.values(verifyResults).filter(v => v.verified).length;
+  const rejectedCount = Object.values(verifyResults).filter(v => !v.loading && !v.verified).length;
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">

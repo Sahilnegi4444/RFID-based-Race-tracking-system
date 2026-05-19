@@ -7,6 +7,7 @@ from pydantic import BaseModel, ConfigDict
 class RunnerCreate(BaseModel):
     rfid_tag: str
     army_number: str
+    verified: bool = False
 
 
 class RunnerBulkCreate(BaseModel):

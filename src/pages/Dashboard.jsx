@@ -91,9 +91,9 @@ export default function Dashboard() {
   // Simulation only runs when race is active
   useEffect(() => {
     if (raceStatus !== 'active') return;
-    const interval = setInterval(simulateLiveUpdates, 2000);
+    const interval = setInterval(() => simulateLiveUpdates(checkpoints), 2000);
     return () => clearInterval(interval);
-  }, [raceStatus, simulateLiveUpdates]);
+  }, [raceStatus, simulateLiveUpdates, checkpoints]);
 
   const active = runners.filter(r => r.status === 'Running').length;
   const finished = runners.filter(r => r.status === 'Finished').length;

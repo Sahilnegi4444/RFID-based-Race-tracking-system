@@ -16,10 +16,10 @@ class CheckpointRecordCreate(BaseModel):
 class CheckpointRecordRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
-    id: uuid.UUID             # UUID object, serialized as string by Pydantic
+    id: int
     army_number: str
     checkpoint: str
     recorded_at: datetime
     reader_id: Optional[str]
-    race_session_id: Optional[uuid.UUID]
+    race_session_id: Optional[str]  # UUID of the race session, kept as str
     created_at: datetime

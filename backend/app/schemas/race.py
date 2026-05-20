@@ -29,7 +29,6 @@ class RaceSessionRead(BaseModel):
 class RaceResultRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
-    id: uuid.UUID
     race_session_id: uuid.UUID
     army_number: str
     rfid_tag: str

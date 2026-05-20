@@ -1,5 +1,4 @@
 import enum
-import uuid
 from datetime import datetime
 from typing import Optional
 
@@ -21,15 +20,15 @@ class CheckpointRecord(Base):
     """
     One row per RFID read at a gate. The earliest read at each
     checkpoint is the authoritative time for that gate.
+    Uses a simple auto-incrementing integer PK — checkpoint records
+    are high-volume and never referenced externally by their own ID.
     """
 
     __tablename__ = "checkpoint_records"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
 
-    # FK to Runner — uses army_number (string PK) instead of UUID
+    # FK to Runner — uses army_number (string PK)
     army_number: Mapped[str] = mapped_column(
         String(32),
         ForeignKey("runners.army_number", ondelete="CASCADE"),
@@ -42,8 +41,8 @@ class CheckpointRecord(Base):
     reader_id: Mapped[Optional[str]] = mapped_column(String(32), nullable=True)
 
     # Link to the race session this read belongs to
-    race_session_id: Mapped[Optional[uuid.UUID]] = mapped_column(
-        UUID(as_uuid=True),
+    race_session_id: Mapped[Optional[str]] = mapped_column(
+        UUID(as_uuid=False),
         ForeignKey("race_sessions.id", ondelete="SET NULL"),
         nullable=True,
         index=True,

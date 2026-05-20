@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime
 from typing import Optional
 
-from sqlalchemy import DateTime, ForeignKey, Integer, String, func
+from sqlalchemy import DateTime, ForeignKey, Integer, PrimaryKeyConstraint, String, func
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -13,23 +13,25 @@ class RaceResult(Base):
     """
     Final standings snapshot taken when a race session is finished.
     Immutable archive — one row per runner per race.
+    Composite PK (army_number + race_session_id) enforces this constraint
+    naturally — no separate ID column needed.
     """
 
     __tablename__ = "race_results"
+    __table_args__ = (
+        PrimaryKeyConstraint("army_number", "race_session_id"),
+    )
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    army_number: Mapped[str] = mapped_column(
+        String(32),
+        ForeignKey("runners.army_number", ondelete="CASCADE"),
+        nullable=False,
     )
     race_session_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("race_sessions.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
-    )
-    army_number: Mapped[str] = mapped_column(
-        String(32),
-        ForeignKey("runners.army_number", ondelete="CASCADE"),
-        nullable=False,
     )
     rfid_tag: Mapped[str] = mapped_column(String(64), nullable=False)
 

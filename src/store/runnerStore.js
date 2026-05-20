@@ -60,8 +60,25 @@ const useRunnerStore = create((set, get) => ({
     set((state) => {
       const updated = state.runners.map((runner) => {
         if (runner.status === 'Finished') return runner;
-        
-        if (Math.random() > 0.8) {
+
+        /**
+         * Two-tier probability to simulate real staggered starts:
+         *
+         *  'Not Started' -> 6% chance per 2s tick to cross the START gate.
+         *    Expected wait: ~33s on average, but high variance means some
+         *    runners cross start much later (simulating late starters).
+         *
+         *  'Running'     -> 22% chance per 2s tick to reach the NEXT gate.
+         *    Expected time per checkpoint: ~9s once they are running.
+         *
+         * Status is set purely by which checkpoint was recorded:
+         *   start gate logged        -> 'Running'
+         *   last active gate logged  -> 'Finished'
+         */
+        const notStarted = runner.status === 'Not Started';
+        const hitThreshold = notStarted ? 0.94 : 0.78;
+
+        if (Math.random() > hitThreshold) {
           const now = new Date();
           const timeStr = now.toLocaleTimeString('en-US', { hour12: false });
           const ts = { ...runner.timestamps };
@@ -76,16 +93,14 @@ const useRunnerStore = create((set, get) => ({
           }
 
           if (recordedKey) {
-            // Push to backend — include raceSessionId so the record links to the active race
             const raceSessionId = useRaceStore.getState().raceSessionId;
             api.recordCheckpoint(runner.rfid, recordedKey, now.toISOString(), raceSessionId);
 
-            // Check if this was the last configured gate
             const isFinished = recordedKey === activeKeys[activeKeys.length - 1];
             return {
               ...runner,
               status: isFinished ? 'Finished' : 'Running',
-              timestamps: ts
+              timestamps: ts,
             };
           }
         }

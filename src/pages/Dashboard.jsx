@@ -29,15 +29,23 @@ function StatCard({ title, value, icon: Icon, accentColor, accentPale, subtitle 
 // ── Status badge ───────────────────────────────────────────────────────────
 function StatusBadge({ status }) {
   const cfg = {
-    Running: { bg: 'var(--army-green-pale)', color: 'var(--army-green)', border: 'var(--army-green-muted)', dot: 'var(--army-green)' },
-    Finished: { bg: 'var(--gold-pale)', color: 'var(--gold)', border: 'var(--gold-muted)', dot: 'var(--gold)' },
-    default: { bg: 'var(--khaki)', color: 'var(--text-muted)', border: 'var(--khaki-border)', dot: 'var(--text-muted)' },
+    'Not Started': { bg: 'rgba(192,57,43,0.10)', color: '#c0392b', border: 'rgba(192,57,43,0.35)', dot: '#c0392b', pulse: true },
+    Running:       { bg: 'var(--army-green-pale)', color: 'var(--army-green)', border: 'var(--army-green-muted)', dot: 'var(--army-green)', pulse: false },
+    Finished:      { bg: 'var(--gold-pale)', color: 'var(--gold)', border: 'var(--gold-muted)', dot: 'var(--gold)', pulse: false },
+    default:       { bg: 'var(--khaki)', color: 'var(--text-muted)', border: 'var(--khaki-border)', dot: 'var(--text-muted)', pulse: false },
   };
   const s = cfg[status] || cfg.default;
   return (
     <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold"
       style={{ background: s.bg, color: s.color, border: `1px solid ${s.border}` }}>
-      <span className="w-1.5 h-1.5 rounded-full inline-block" style={{ background: s.dot }} />
+      {s.pulse ? (
+        <span className="relative flex h-1.5 w-1.5">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style={{ background: s.dot }} />
+          <span className="relative inline-flex rounded-full h-1.5 w-1.5" style={{ background: s.dot }} />
+        </span>
+      ) : (
+        <span className="w-1.5 h-1.5 rounded-full inline-block" style={{ background: s.dot }} />
+      )}
       {status}
     </span>
   );
@@ -126,8 +134,10 @@ export default function Dashboard() {
         {/* Status indicator */}
         <div className="flex items-center gap-3">
           {raceStatus === 'idle' && (
-            <span className="text-sm font-semibold" style={{ color: 'var(--text-muted)' }}>
-              Race not started — upload runners and press Start
+            <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-bold"
+              style={{ background: 'rgba(192,57,43,0.12)', color: 'var(--danger)', border: '1.5px solid rgba(192,57,43,0.3)' }}>
+              <span className="w-2 h-2 rounded-full inline-block" style={{ background: 'var(--danger)' }} />
+              NOT STARTED
             </span>
           )}
           {raceStatus === 'active' && (
@@ -264,6 +274,7 @@ export default function Dashboard() {
             </table>
           </div>
         )}
+
       </div>
     </div>
   );

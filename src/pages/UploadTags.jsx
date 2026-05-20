@@ -63,7 +63,7 @@ export default function UploadTags() {
         rfid_tag: r.rfid,           // backend payload
         armyNumber: r.armyNumber,
         army_number: r.armyNumber,  // backend payload
-        status: 'Running',
+        status: 'Not Started',
         verified: true,
         timestamps: { start: null, checkpoint1: null, checkpoint2: null, finish: null },
       }));

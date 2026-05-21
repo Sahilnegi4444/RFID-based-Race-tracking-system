@@ -6,6 +6,11 @@ import { api } from '../services/api';
  * and persists each stage to the backend database.
  *
  * raceStatus: 'idle' | 'active' | 'finished'
+ *
+ * Lifecycle:
+ *   1. createRaceSession() → creates DB record, sets raceSessionId, raceStatus stays 'idle'
+ *   2. startRace()         → starts the session in DB, raceStatus → 'active'
+ *   3. finishRace()        → archives results in DB, raceStatus → 'finished'
  */
 const useRaceStore = create((set, get) => ({
   raceStatus: 'idle',        // idle → active → finished
@@ -18,46 +23,66 @@ const useRaceStore = create((set, get) => ({
   setRaceCustomName: (name) => set({ raceCustomName: name }),
 
   /**
-   * 1. Create the race session in the DB  → status: 'pending'
-   * 2. Start it                           → status: 'active'
-   * 3. Update frontend state
+   * Step 1: Create the race session in the DB (status: 'pending').
+   * This is called from the Create Race page. It does NOT start the race.
+   * After this, raceSessionId is set and Upload Tags becomes unlocked.
    */
-  startRace: async () => {
+  createRaceSession: async () => {
     const { raceType, raceCustomName } = get();
     const category = raceType === 'others' ? 'others' : raceType;
     const customName = raceType === 'others' ? raceCustomName : '';
 
-    // Step 1: create the session record
     const session = await api.createRace(category, customName);
     if (!session) {
-      console.warn('[raceStore] Could not create race session in DB — continuing in offline mode');
-      set({ raceStatus: 'active', raceStartedAt: new Date(), raceSessionId: null });
+      console.warn('[raceStore] Could not create race session in DB — offline mode');
+      // Still mark as created locally so UI unlocks
+      set({ raceSessionId: '__offline__' });
       return;
     }
 
-    // Step 2: start it
-    const started = await api.startRace(session.id);
-    if (!started) {
-      console.warn('[raceStore] Could not start race in DB — continuing with session id only');
+    set({ raceSessionId: session.id });
+    console.log('[raceStore] Race session created — id:', session.id);
+  },
+
+  /**
+   * Step 2: Start the already-created race session.
+   * Called from the Dashboard "Start Race" button.
+   */
+  startRace: async () => {
+    const { raceSessionId } = get();
+
+    if (raceSessionId && raceSessionId !== '__offline__') {
+      const started = await api.startRace(raceSessionId);
+      if (!started) {
+        console.warn('[raceStore] Could not start race in DB — continuing in frontend-only mode');
+      }
+    } else if (!raceSessionId) {
+      // No session yet — create one on the fly (fallback)
+      const { raceType, raceCustomName } = get();
+      const category = raceType === 'others' ? 'others' : raceType;
+      const customName = raceType === 'others' ? raceCustomName : '';
+      const session = await api.createRace(category, customName);
+      if (session) {
+        await api.startRace(session.id);
+        set({ raceSessionId: session.id });
+      }
     }
 
     set({
       raceStatus: 'active',
       raceStartedAt: new Date(),
-      raceSessionId: session.id,
     });
 
-    console.log('[raceStore] Race started — session id:', session.id);
+    console.log('[raceStore] Race started');
   },
 
   /**
-   * Finish the race in the DB, which calculates and archives final standings
-   * in the race_results table.
+   * Step 3: Finish the race in the DB — archives final standings.
    */
   finishRace: async () => {
     const { raceSessionId } = get();
 
-    if (raceSessionId) {
+    if (raceSessionId && raceSessionId !== '__offline__') {
       const result = await api.finishRace(raceSessionId);
       if (result) {
         console.log('[raceStore] Race finished and results archived.');

@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Activity, CheckCircle, MapPin, Clock, Play, Square, Download } from 'lucide-react';
+import { Activity, CheckCircle, MapPin, Clock, Play, Square, Download, PlusCircle } from 'lucide-react';
 import useRunnerStore from '../store/runnerStore';
 import useSettingsStore from '../store/settingsStore';
 import useRaceStore from '../store/raceStore';
@@ -92,9 +93,10 @@ function exportCSV(runners, cpKeys, cpLabels, raceLabel) {
 
 // ── Main component ─────────────────────────────────────────────────────────
 export default function Dashboard() {
+  const navigate = useNavigate();
   const { runners, simulateLiveUpdates } = useRunnerStore();
   const checkpoints = useSettingsStore(state => state.checkpoints);
-  const { raceStatus, raceType, raceCustomName, startRace, finishRace, raceLabel } = useRaceStore();
+  const { raceStatus, raceType, raceCustomName, raceSessionId, startRace, finishRace, raceLabel } = useRaceStore();
 
   // Simulation only runs when race is active
   useEffect(() => {
@@ -122,9 +124,13 @@ export default function Dashboard() {
           subtitle="Currently running" />
         <StatCard title="Finished" value={finished} icon={CheckCircle}
           accentColor="var(--gold)" accentPale="var(--gold-pale)" />
-        <StatCard title="Checkpoints" value={checkpoints} icon={MapPin}
+        <StatCard
+          title="Checkpoints"
+          value={raceSessionId ? checkpoints : 0}
+          icon={MapPin}
           accentColor="var(--warning)" accentPale="var(--warning-pale)"
-          subtitle="Active gates" />
+          subtitle={raceSessionId ? 'Active gates' : 'No race created'}
+        />
       </div>
 
       {/* ── Race control bar ── */}
@@ -157,7 +163,20 @@ export default function Dashboard() {
 
         {/* Action buttons */}
         <div className="flex items-center gap-3">
-          {raceStatus === 'idle' && runners.length > 0 && (
+          {/* If no race session created yet — show Create Race CTA button */}
+          {raceStatus === 'idle' && !raceSessionId && (
+            <motion.button
+              id="btn-dashboard-create-race"
+              onClick={() => navigate('/create-race')}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm text-white"
+              style={{ background: 'var(--gold)' }}
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+            >
+              <PlusCircle size={16} /> Create Race
+            </motion.button>
+          )}
+          {raceStatus === 'idle' && raceSessionId && runners.length > 0 && (
             <motion.button
               onClick={startRace}
               className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm text-white"

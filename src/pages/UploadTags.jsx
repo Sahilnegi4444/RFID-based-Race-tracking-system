@@ -1,9 +1,10 @@
 import { useState, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Papa from 'papaparse';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Upload, FileUp, CheckCircle, XCircle, AlertCircle, Table, X, Loader, ShieldCheck } from 'lucide-react';
+import { Upload, FileUp, CheckCircle, XCircle, AlertCircle, Table, X, Loader, ShieldCheck, Lock, PlusCircle } from 'lucide-react';
 import useRunnerStore from '../store/runnerStore';
-
+import useRaceStore from '../store/raceStore';
 import { api } from '../services/api';
 
 export default function UploadTags() {
@@ -16,7 +17,9 @@ export default function UploadTags() {
   const [isDragging, setIsDragging] = useState(false);
   const [step, setStep] = useState(1);        // 1=Upload 2=Verify 3=Done
   const fileInputRef = useRef(null);
+  const navigate = useNavigate();
   const addRunners = useRunnerStore(state => state.addRunners);
+  const raceSessionId = useRaceStore(state => state.raceSessionId);
 
   const processFile = (f) => {
     setError(''); setVerifyResults({}); setVerified(false); setStep(1);
@@ -83,6 +86,38 @@ export default function UploadTags() {
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
+
+      {/* ── Race not created guard ── */}
+      {!raceSessionId && (
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="rounded-2xl p-8 text-center"
+          style={{ background: 'var(--surface)', border: '2px dashed var(--khaki-border)', boxShadow: '0 2px 12px rgba(74,92,43,0.07)' }}
+        >
+          <div className="mx-auto mb-4 w-14 h-14 rounded-full flex items-center justify-center"
+            style={{ background: 'rgba(192,57,43,0.10)' }}>
+            <Lock size={26} style={{ color: 'var(--danger)' }} />
+          </div>
+          <h3 className="text-base font-bold mb-1" style={{ color: 'var(--text-primary)' }}>No Race Created Yet</h3>
+          <p className="text-sm mb-5" style={{ color: 'var(--text-muted)' }}>
+            You must create a race session before uploading runner tags.
+          </p>
+          <motion.button
+            id="btn-upload-create-race"
+            onClick={() => navigate('/create-race')}
+            className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl font-bold text-sm text-white"
+            style={{ background: 'var(--army-green)' }}
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
+          >
+            <PlusCircle size={16} /> Go to Create Race
+          </motion.button>
+        </motion.div>
+      )}
+
+      {/* ── Main upload card (only shown when race exists) ── */}
+      {raceSessionId && (<>
       <div className="rounded-2xl overflow-hidden"
         style={{ background: 'var(--surface)', border: '1px solid var(--khaki-border)', boxShadow: '0 2px 12px rgba(74,92,43,0.07)' }}>
 
@@ -247,6 +282,9 @@ export default function UploadTags() {
         <p>Each row should contain exactly two columns: <span className="font-mono font-semibold">RFID_TAG, Army Number</span></p>
         <p className="mt-1 font-mono text-xs" style={{ color: 'var(--text-muted)' }}>Example: TAG-1007, 14682571K</p>
       </div>
+      </>)}
+
+
     </div>
   );
 }

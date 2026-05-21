@@ -4,7 +4,7 @@ import DashboardLayout from './layouts/DashboardLayout';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import UploadTags from './pages/UploadTags';
-import Settings from './pages/Settings';
+import CreateRace from './pages/CreateRace';
 import NotFound from './pages/NotFound';
 
 const ProtectedRoute = ({ children }) => {
@@ -27,7 +27,9 @@ function App() {
           <Route index element={<Navigate to="/dashboard" replace />} />
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="upload" element={<UploadTags />} />
-          <Route path="settings" element={<Settings />} />
+          {/* "Create Race" page — also aliased from old /settings route */}
+          <Route path="create-race" element={<CreateRace />} />
+          <Route path="settings" element={<Navigate to="/create-race" replace />} />
         </Route>
 
         <Route path="*" element={<NotFound />} />

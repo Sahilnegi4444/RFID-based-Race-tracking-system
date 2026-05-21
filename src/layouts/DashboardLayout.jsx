@@ -1,5 +1,5 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Upload, Settings as SettingsIcon, LogOut, Radio, Shield } from 'lucide-react';
+import { LayoutDashboard, Upload, PlusCircle, LogOut, Radio, Shield } from 'lucide-react';
 import useAuthStore from '../store/authStore';
 import useSettingsStore from '../store/settingsStore';
 import { cn } from '../utils/utils';
@@ -16,9 +16,9 @@ export default function DashboardLayout() {
   };
 
   const navItems = [
-    { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
-    { name: 'Upload Tags', path: '/upload', icon: Upload },
-    { name: 'Settings', path: '/settings', icon: SettingsIcon },
+    { name: 'Dashboard',    path: '/dashboard',    icon: LayoutDashboard },
+    { name: 'Upload Tags',  path: '/upload',       icon: Upload },
+    { name: 'Create Race',  path: '/create-race',  icon: PlusCircle },
   ];
 
   return (

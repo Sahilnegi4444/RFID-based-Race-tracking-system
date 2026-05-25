@@ -104,4 +104,13 @@ export const api = {
       return [];
     }
   },
+
+  resetActiveState: async () => {
+    try {
+      return await apiFetch('/races/reset', { method: 'POST' });
+    } catch (err) {
+      console.error('[api] resetActiveState:', err.message);
+      return null;
+    }
+  },
 };

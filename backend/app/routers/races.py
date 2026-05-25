@@ -122,3 +122,22 @@ async def export_csv(race_id: str, db: AsyncSession = Depends(get_db)):
         media_type="text/csv",
         headers={"Content-Disposition": f"attachment; filename={filename}"},
     )
+
+
+@router.post("/reset", status_code=status.HTTP_200_OK)
+async def reset_active_state(db: AsyncSession = Depends(get_db)):
+    """
+    Resets the active state for a fresh login session.
+    Wipes all transient runners and deletes any 'pending' race sessions in the database.
+    """
+    from app.models.runner import Runner
+    from app.models.race_session import RaceSession, RaceStatus
+    from sqlalchemy import delete
+
+    # 1. Wipe transient runners
+    await db.execute(delete(Runner))
+
+    # 2. Delete any 'pending' race sessions (leaving finished ones intact)
+    await db.execute(delete(RaceSession).where(RaceSession.status == RaceStatus.pending))
+
+    return {"status": "success", "message": "Active state cleanly reset."}

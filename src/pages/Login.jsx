@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Radio, Lock, User, Shield } from 'lucide-react';
 import useAuthStore from '../store/authStore';
+import useRaceStore from '../store/raceStore';
 
 export default function Login() {
   const [username, setUsername] = useState('');
@@ -11,6 +12,11 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const login = useAuthStore(state => state.login);
   const navigate = useNavigate();
+  const resetActiveState = useRaceStore(state => state.resetActiveState);
+
+  useEffect(() => {
+    resetActiveState();
+  }, [resetActiveState]);
 
   const handleLogin = async (e) => {
     e.preventDefault();

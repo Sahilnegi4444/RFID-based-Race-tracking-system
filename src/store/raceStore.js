@@ -140,6 +140,25 @@ const useRaceStore = create((set, get) => ({
       raceSessionId: null,
     }),
 
+  /**
+   * Reset active state completely in both DB and Frontend.
+   * Called during login / logout to start fresh.
+   */
+  resetActiveState: async () => {
+    try {
+      await api.resetActiveState();
+    } catch (err) {
+      console.error('[raceStore] Failed to call reset active state:', err);
+    }
+    
+    // Clear local Zustand state
+    set({
+      raceStatus: 'idle',
+      raceStartedAt: null,
+      raceSessionId: null,
+    });
+  },
+
   /** Human-readable race label */
   raceLabel: () => {
     const { raceType, raceCustomName } = get();

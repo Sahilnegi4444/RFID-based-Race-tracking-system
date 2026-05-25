@@ -80,7 +80,7 @@ export default function UploadTags() {
     // reset
     setFile(null); setParsedData([]); setVerifyResults({}); setVerified(false); setStep(1);
 
-    // Redirect to dashboard where the admin can start the race
+    // Navigate back to the dashboard to show the imported runners
     navigate('/dashboard');
   };
 

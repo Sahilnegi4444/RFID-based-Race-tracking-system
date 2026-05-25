@@ -110,7 +110,7 @@ export default function Dashboard() {
     if (raceStatus !== 'active') return;
     const interval = setInterval(() => loadRunners(checkpoints), 1500);
     return () => clearInterval(interval);
-  }, [loadRunners, checkpoints, raceStatus]);
+  }, [loadRunners, checkpoints, raceStatus, raceSessionId]);
 
   const active = runners.filter(r => r.status === 'Running').length;
   const finished = runners.filter(r => r.status === 'Finished').length;

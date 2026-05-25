@@ -45,6 +45,45 @@ const useRaceStore = create((set, get) => ({
   },
 
   /**
+   * Load active or pending race session from database.
+   * Restores state in the frontend store upon refresh.
+   */
+  loadActiveRace: async () => {
+    try {
+      const sessions = await api.listRaces();
+      if (!sessions || sessions.length === 0) return;
+
+      // Find the first non-finished session (pending or active)
+      const current = sessions.find(s => s.status === 'active' || s.status === 'pending');
+      if (current) {
+        // Map category back to frontend UI options
+        let mappedType = current.category;
+        if (mappedType !== 'BPT' && mappedType !== 'PPT' && mappedType !== 'CPT') {
+          mappedType = 'others';
+        }
+
+        set({
+          raceSessionId: current.id,
+          raceStatus: current.status === 'active' ? 'active' : 'idle',
+          raceType: mappedType,
+          raceCustomName: current.custom_name || '',
+          raceStartedAt: current.started_at ? new Date(current.started_at) : null,
+        });
+        console.log('[raceStore] Restored race session state:', current.id, 'status:', current.status);
+      } else {
+        // Clear stale session state if no active or pending race is found in the DB
+        set({
+          raceSessionId: null,
+          raceStatus: 'idle',
+          raceStartedAt: null,
+        });
+      }
+    } catch (err) {
+      console.error('[raceStore] Failed to load active race:', err);
+    }
+  },
+
+  /**
    * Step 2: Start the already-created race session.
    * Called from the Dashboard "Start Race" button.
    */

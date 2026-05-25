@@ -18,6 +18,9 @@ class RunnerStatusUpdate(BaseModel):
     status: str
 
 
+from app.schemas.checkpoint import CheckpointRecordRead
+
+
 class RunnerRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -28,6 +31,7 @@ class RunnerRead(BaseModel):
     status: str
     created_at: datetime
     updated_at: datetime
+    checkpoints: list[CheckpointRecordRead] = []
 
 
 class VerifyResponse(BaseModel):

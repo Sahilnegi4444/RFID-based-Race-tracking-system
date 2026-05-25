@@ -5,6 +5,7 @@ import { Activity, CheckCircle, MapPin, Clock, Play, Square, Download, PlusCircl
 import useRunnerStore from '../store/runnerStore';
 import useSettingsStore from '../store/settingsStore';
 import useRaceStore from '../store/raceStore';
+import RfidSerialConnector from '../components/RfidSerialConnector';
 
 // ── Stat card ──────────────────────────────────────────────────────────────
 function StatCard({ title, value, icon: Icon, accentColor, accentPale, subtitle }) {
@@ -94,16 +95,22 @@ function exportCSV(runners, cpKeys, cpLabels, raceLabel) {
 // ── Main component ─────────────────────────────────────────────────────────
 export default function Dashboard() {
   const navigate = useNavigate();
-  const { runners, simulateLiveUpdates } = useRunnerStore();
+  const { runners, loadRunners } = useRunnerStore();
   const checkpoints = useSettingsStore(state => state.checkpoints);
-  const { raceStatus, raceType, raceCustomName, raceSessionId, startRace, finishRace, raceLabel } = useRaceStore();
+  const { raceStatus, raceType, raceCustomName, raceSessionId, startRace, finishRace, raceLabel, loadActiveRace } = useRaceStore();
 
-  // Simulation only runs when race is active
+  // Load the active race session from the DB on mount to restore state across refreshes
   useEffect(() => {
+    loadActiveRace();
+  }, [loadActiveRace]);
+
+  // Load runners on mount, and poll for updates every 1.5 seconds only when race is active
+  useEffect(() => {
+    loadRunners(checkpoints);
     if (raceStatus !== 'active') return;
-    const interval = setInterval(() => simulateLiveUpdates(checkpoints), 2000);
+    const interval = setInterval(() => loadRunners(checkpoints), 1500);
     return () => clearInterval(interval);
-  }, [raceStatus, simulateLiveUpdates, checkpoints]);
+  }, [loadRunners, checkpoints, raceStatus]);
 
   const active = runners.filter(r => r.status === 'Running').length;
   const finished = runners.filter(r => r.status === 'Finished').length;
@@ -211,6 +218,9 @@ export default function Dashboard() {
           )}
         </div>
       </div>
+
+      {/* ── Real RFID Hardware Connection ── */}
+      <RfidSerialConnector checkpointsCount={checkpoints} />
 
       {/* ── Live Leaderboard ── */}
       <div className="rounded-2xl overflow-hidden"

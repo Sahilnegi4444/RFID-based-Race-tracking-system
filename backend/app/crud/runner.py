@@ -8,14 +8,22 @@ from app.models.runner import Runner, RunnerStatus
 from app.schemas.runner import RunnerCreate
 
 
+from sqlalchemy.orm import selectinload
+
+
 async def get_all_runners(db: AsyncSession) -> list[Runner]:
-    result = await db.execute(select(Runner).order_by(Runner.created_at))
+    result = await db.execute(
+        select(Runner).options(selectinload(Runner.checkpoints)).order_by(Runner.created_at)
+    )
     return result.scalars().all()
 
 
 async def get_verified_runners(db: AsyncSession) -> list[Runner]:
     result = await db.execute(
-        select(Runner).where(Runner.verified == True).order_by(Runner.created_at)
+        select(Runner)
+        .where(Runner.verified == True)
+        .options(selectinload(Runner.checkpoints))
+        .order_by(Runner.created_at)
     )
     return result.scalars().all()
 
@@ -34,8 +42,13 @@ async def create_runner(db: AsyncSession, data: RunnerCreate) -> Runner:
     runner = Runner(rfid_tag=data.rfid_tag, army_number=data.army_number)
     db.add(runner)
     await db.flush()
-    await db.refresh(runner)
-    return runner
+    # Re-fetch with selectinload to ensure checkpoints relation is loaded and serializable
+    result = await db.execute(
+        select(Runner)
+        .where(Runner.army_number == data.army_number)
+        .options(selectinload(Runner.checkpoints))
+    )
+    return result.scalar_one()
 
 
 async def bulk_create_runners(db: AsyncSession, runners_data: list[RunnerCreate]) -> list[Runner]:
@@ -77,10 +90,12 @@ async def bulk_create_runners(db: AsyncSession, runners_data: list[RunnerCreate]
     await db.execute(stmt)
     await db.flush()
 
-    # Re-fetch the inserted/updated rows to return full ORM objects
+    # Re-fetch the inserted/updated rows with selectinload to return full ORM objects
     army_numbers = [r.army_number for r in runners_data]
     result = await db.execute(
-        select(Runner).where(Runner.army_number.in_(army_numbers))
+        select(Runner)
+        .where(Runner.army_number.in_(army_numbers))
+        .options(selectinload(Runner.checkpoints))
     )
     return result.scalars().all()
 

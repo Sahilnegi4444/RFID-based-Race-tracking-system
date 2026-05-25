@@ -79,6 +79,9 @@ export default function UploadTags() {
 
     // reset
     setFile(null); setParsedData([]); setVerifyResults({}); setVerified(false); setStep(1);
+
+    // Redirect to dashboard where the admin can start the race
+    navigate('/dashboard');
   };
 
   const verifiedCount = Object.values(verifyResults).filter(v => v.verified).length;

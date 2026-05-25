@@ -51,6 +51,15 @@ export const api = {
     }
   },
 
+  listRaces: async () => {
+    try {
+      return await apiFetch('/races/');
+    } catch (err) {
+      console.error('[api] listRaces:', err.message);
+      return [];
+    }
+  },
+
   startRace: async (raceId) => {
     try {
       return await apiFetch(`/races/${raceId}/start`, { method: 'POST' });
@@ -84,6 +93,15 @@ export const api = {
     } catch (err) {
       console.error('[api] recordCheckpoint:', err.message);
       return null;
+    }
+  },
+
+  getRunners: async () => {
+    try {
+      return await apiFetch('/runners/');
+    } catch (err) {
+      console.error('[api] getRunners:', err.message);
+      return [];
     }
   },
 };

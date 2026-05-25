@@ -28,6 +28,12 @@ async def create_race(data: RaceSessionCreate, db: AsyncSession = Depends(get_db
         raise HTTPException(400, "A race is already active. Finish it before creating a new one.")
     if data.category == "others" and not data.custom_name:
         raise HTTPException(400, "custom_name is required when category is 'others'.")
+
+    # Clear transient runners and their records to ensure a completely fresh start for the new race
+    from app.models.runner import Runner
+    from sqlalchemy import delete
+    await db.execute(delete(Runner))
+
     return await crud.create_race_session(db, data)
 
 
@@ -57,7 +63,9 @@ async def finish_race(race_id: str, db: AsyncSession = Depends(get_db)):
         raise HTTPException(400, "Race is not active.")
 
     verified = await get_verified_runners(db)
+    # 1. Snapshot and archive final standings to race_results
     race, _ = await crud.finish_race(db, race, verified)
+
     return race
 
 

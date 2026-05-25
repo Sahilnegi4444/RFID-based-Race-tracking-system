@@ -24,7 +24,6 @@ class RaceResult(Base):
 
     army_number: Mapped[str] = mapped_column(
         String(32),
-        ForeignKey("runners.army_number", ondelete="CASCADE"),
         nullable=False,
     )
     race_session_id: Mapped[uuid.UUID] = mapped_column(

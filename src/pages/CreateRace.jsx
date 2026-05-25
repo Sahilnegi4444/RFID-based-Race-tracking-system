@@ -66,7 +66,7 @@ export default function CreateRace() {
     setCreating(true);
     try {
       await createRaceSession();
-      navigate('/dashboard');
+      navigate('/upload-tags');
     } catch (err) {
       setCreateError('Failed to create race session. Please try again.');
     } finally {

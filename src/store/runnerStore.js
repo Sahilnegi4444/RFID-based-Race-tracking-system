@@ -28,8 +28,18 @@ function sortLeaderboard(runners, activeKeys) {
     const aCount = activeKeys.filter(k => a.timestamps[k]).length;
     const bCount = activeKeys.filter(k => b.timestamps[k]).length;
     if (bCount !== aCount) return bCount - aCount; // more checkpoints → higher rank
+
     // Same checkpoint count → shorter elapsed time wins
-    return elapsedSec(a, activeKeys) - elapsedSec(b, activeKeys);
+    const aSec = elapsedSec(a, activeKeys);
+    const bSec = elapsedSec(b, activeKeys);
+
+    if (aSec === Infinity && bSec === Infinity) {
+      // Both haven't started or have no elapsed time — sort alphabetically by army number to avoid NaN
+      return (a.armyNumber || '').localeCompare(b.armyNumber || '');
+    }
+    if (aSec === Infinity) return 1;
+    if (bSec === Infinity) return -1;
+    return aSec - bSec;
   });
 }
 
@@ -53,6 +63,59 @@ const useRunnerStore = create((set, get) => ({
           : r
       ),
     })),
+
+  loadRunners: async (activeCheckpointsCount = 4) => {
+    try {
+      // If there is no active/pending race session in the frontend state,
+      // we shouldn't show any runners on the dashboard (they are cleared on refresh)
+      const raceSessionId = useRaceStore.getState().raceSessionId;
+      if (!raceSessionId) {
+        set({ runners: [] });
+        return;
+      }
+
+      const data = await api.getRunners();
+      if (!data) return;
+      
+      const activeKeys = ALL_CP_KEYS.slice(0, activeCheckpointsCount);
+
+      const mapped = data.map((r) => {
+        const timestamps = { start: null, checkpoint1: null, checkpoint2: null, finish: null };
+        if (r.checkpoints) {
+          r.checkpoints.forEach((cp) => {
+            const time = new Date(cp.recorded_at);
+            // Format to HH:MM:SS locally
+            const timeStr = time.toLocaleTimeString('en-US', { hour12: false });
+            timestamps[cp.checkpoint] = timeStr;
+          });
+        }
+
+        // Map backend lowercase status to frontend UI status
+        let status = 'Not Started';
+        if (r.status === 'running') {
+          status = 'Running';
+        } else if (r.status === 'finished') {
+          status = 'Finished';
+        } else if (timestamps.finish) {
+          status = 'Finished';
+        } else if (timestamps.start) {
+          status = 'Running';
+        }
+
+        return {
+          rfid: r.rfid_tag,
+          armyNumber: r.army_number,
+          verified: r.verified,
+          status: status,
+          timestamps: timestamps,
+        };
+      });
+
+      set({ runners: sortLeaderboard(mapped, activeKeys) });
+    } catch (err) {
+      console.error('[runnerStore] Failed to load runners from backend:', err);
+    }
+  },
 
   simulateLiveUpdates: (activeCheckpointsCount) => {
     const activeKeys = ALL_CP_KEYS.slice(0, activeCheckpointsCount);

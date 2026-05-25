@@ -128,16 +128,29 @@ async def export_csv(race_id: str, db: AsyncSession = Depends(get_db)):
 async def reset_active_state(db: AsyncSession = Depends(get_db)):
     """
     Resets the active state for a fresh login session.
-    Wipes all transient runners and deletes any 'pending' race sessions in the database.
+    Only wipes active runners and pending sessions if the latest race has ended (is 'finished') or if no race session exists.
     """
     from app.models.runner import Runner
     from app.models.race_session import RaceSession, RaceStatus
-    from sqlalchemy import delete
+    from sqlalchemy import delete, select, desc
 
-    # 1. Wipe transient runners
+    # Fetch the latest race session
+    result = await db.execute(
+        select(RaceSession).order_by(desc(RaceSession.created_at)).limit(1)
+    )
+    latest_session = result.scalars().first()
+
+    # If the latest race session is active or pending, DO NOT reset the state!
+    if latest_session and latest_session.status in (RaceStatus.active, RaceStatus.pending):
+        return {
+            "status": "skipped",
+            "message": f"Active or pending race session '{latest_session.id}' is ongoing. Reset skipped."
+        }
+
+    # Otherwise, clean reset: wipe all transient runners
     await db.execute(delete(Runner))
 
-    # 2. Delete any 'pending' race sessions (leaving finished ones intact)
+    # Also clean up any lingering pending sessions
     await db.execute(delete(RaceSession).where(RaceSession.status == RaceStatus.pending))
 
     return {"status": "success", "message": "Active state cleanly reset."}

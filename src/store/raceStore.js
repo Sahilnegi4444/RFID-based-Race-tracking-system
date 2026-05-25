@@ -146,7 +146,11 @@ const useRaceStore = create((set, get) => ({
    */
   resetActiveState: async () => {
     try {
-      await api.resetActiveState();
+      const response = await api.resetActiveState();
+      if (response && response.status === 'skipped') {
+        console.log('[raceStore] Active/pending race detected in DB. Skipping reset.');
+        return;
+      }
     } catch (err) {
       console.error('[raceStore] Failed to call reset active state:', err);
     }

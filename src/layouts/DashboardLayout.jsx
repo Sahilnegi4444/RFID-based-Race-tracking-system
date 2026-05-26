@@ -1,7 +1,10 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
 import { LayoutDashboard, Upload, PlusCircle, LogOut, Radio, Shield } from 'lucide-react';
 import useAuthStore from '../store/authStore';
 import useSettingsStore from '../store/settingsStore';
+import useRaceStore from '../store/raceStore';
+import useRunnerStore from '../store/runnerStore';
 import { cn } from '../utils/utils';
 
 export default function DashboardLayout() {
@@ -10,8 +13,18 @@ export default function DashboardLayout() {
   const raceTitle = useSettingsStore(state => state.raceTitle);
   const navigate = useNavigate();
 
+  const loadActiveRace = useRaceStore(state => state.loadActiveRace);
+  const resetRace = useRaceStore(state => state.resetRace);
+  const clearRunners = useRunnerStore(state => state.clearRunners);
+
+  useEffect(() => {
+    loadActiveRace();
+  }, [loadActiveRace]);
+
   const handleLogout = () => {
     logout();
+    resetRace();
+    clearRunners();
     navigate('/login');
   };
 

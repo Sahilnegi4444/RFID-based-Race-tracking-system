@@ -97,12 +97,7 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const { runners, loadRunners } = useRunnerStore();
   const checkpoints = useSettingsStore(state => state.checkpoints);
-  const { raceStatus, raceType, raceCustomName, raceSessionId, startRace, finishRace, raceLabel, loadActiveRace } = useRaceStore();
-
-  // Load the active race session from the DB on mount to restore state across refreshes
-  useEffect(() => {
-    loadActiveRace();
-  }, [loadActiveRace]);
+  const { raceStatus, raceType, raceCustomName, raceSessionId, startRace, finishRace, raceLabel } = useRaceStore();
 
   // Load runners on mount, and poll for updates every 1.5 seconds only when race is active
   useEffect(() => {
